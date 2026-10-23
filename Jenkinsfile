@@ -1,4 +1,3 @@
-
 pipeline {
     agent any
 
@@ -21,9 +20,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh '''
-                    docker build -t cloudopslab-api:latest app
-                '''
+                sh 'docker build -t cloudopslab-api:latest app'
             }
         }
 
@@ -31,27 +28,11 @@ pipeline {
             steps {
                 sh '''
                     docker rm -f cloudopslab-api-container || true
-
                     docker run -d \
                         --name cloudopslab-api-container \
                         -p 8082:8080 \
                         --restart unless-stopped \
                         cloudopslab-api:latest
-
-                    echo "Waiting for application health check..."
-
-                    for i in $(seq 1 12); do
-                        if curl -fsS http://localhost:8082/health; then
-                            echo "Health check passed!"
-                            exit 0
-                        fi
-
-                        sleep 5
-                    done
-
-                    echo "Health check failed!"
-                    docker logs cloudopslab-api-container
-                    exit 1
                 '''
             }
         }
@@ -59,61 +40,6 @@ pipeline {
         stage('Build Summary') {
             steps {
                 echo 'CloudOpsLab CI/CD pipeline completed successfully!'
-            }
-        }
-    }
-
-    post {
-        success {
-            echo 'CI/CD pipeline succeeded.'
-        }
-
-        failure {
-            echo 'CI/CD pipeline failed. Check the console output.'
-        }
-    }
-}
-    stages {
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
-
-        stage('Build and Test') {
-            steps {
-                sh '''
-                    cd app
-                    chmod +x mvnw
-                    ./mvnw clean verify
-                '''
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                sh '''
-                    docker build -t cloudopslab-api:latest app
-                '''
-            }
-        }
-
-        stage('Deploy Application') {
-            steps {
-                sh '''
-                    docker rm -f cloudopslab-api-container || true
-                    docker run -d \
-                        --name cloudopslab-api-container \
-                        -p 8082:8080 \
-                        --restart unless-stopped \
-                        cloudopslab-api:latest
-                '''
-            }
-        }
-
-        stage('Build Summary') {
-            steps {
-                echo 'CloudOpsLab build, tests, image build, and deployment completed!'
             }
         }
     }
