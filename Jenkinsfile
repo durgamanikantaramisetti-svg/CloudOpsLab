@@ -18,9 +18,17 @@ pipeline {
             }
         }
 
+        stage('Build Docker Image') {
+            steps {
+                sh '''
+                    docker build -t cloudopslab-api:latest app
+                '''
+            }
+        }
+
         stage('Build Summary') {
             steps {
-                echo 'CloudOpsLab build and tests completed successfully!'
+                echo 'CloudOpsLab build, tests, and Docker image completed successfully!'
             }
         }
     }
