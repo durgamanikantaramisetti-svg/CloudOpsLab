@@ -1,3 +1,4 @@
+
 pipeline {
     agent any
 
@@ -26,19 +27,32 @@ pipeline {
             }
         }
 
+        stage('Deploy Application') {
+            steps {
+                sh '''
+                    docker rm -f cloudopslab-api-container || true
+                    docker run -d \
+                        --name cloudopslab-api-container \
+                        -p 8082:8080 \
+                        --restart unless-stopped \
+                        cloudopslab-api:latest
+                '''
+            }
+        }
+
         stage('Build Summary') {
             steps {
-                echo 'CloudOpsLab build, tests, and Docker image completed successfully!'
+                echo 'CloudOpsLab build, tests, image build, and deployment completed!'
             }
         }
     }
 
     post {
         success {
-            echo 'CI pipeline succeeded.'
+            echo 'CI/CD pipeline succeeded.'
         }
         failure {
-            echo 'CI pipeline failed. Check the console output.'
+            echo 'CI/CD pipeline failed. Check the console output.'
         }
     }
 }
