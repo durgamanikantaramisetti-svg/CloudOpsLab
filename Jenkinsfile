@@ -28,11 +28,26 @@ pipeline {
             steps {
                 sh '''
                     docker rm -f cloudopslab-api-container || true
-                    docker run -d \
-                        --name cloudopslab-api-container \
-                        -p 8082:8080 \
-                        --restart unless-stopped \
-                        cloudopslab-api:latest
+                    docker run -d                         --name cloudopslab-api-container                         -p 8082:8080                         --restart unless-stopped                         cloudopslab-api:latest
+                '''
+            }
+        }
+
+        stage('Health Check') {
+            steps {
+                sh '''
+                    echo "Checking application health..."
+                    for attempt in $(seq 1 30); do
+                        if curl --fail --silent http://host.docker.internal:8082/health; then
+                            echo "Health check passed!"
+                            exit 0
+                        fi
+                        echo "Attempt $attempt failed. Retrying in 2 seconds..."
+                        sleep 2
+                    done
+                    echo "Health check failed."
+                    docker logs cloudopslab-api-container || true
+                    exit 1
                 '''
             }
         }
