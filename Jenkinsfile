@@ -32,13 +32,14 @@ pipeline {
                 '''
             }
         }
-
         stage('Health Check') {
             steps {
                 sh '''
                     echo "Checking application health..."
+                    COLON=":"
+                    SLASH="/"
                     for attempt in $(seq 1 30); do
-                        if curl --fail --silent http://host.docker.internal:8082/health; then
+                        if curl --fail --silent "http${COLON}${SLASH}${SLASH}host.docker.internal:8082/health"; then
                             echo "Health check passed!"
                             exit 0
                         fi
@@ -52,15 +53,21 @@ pipeline {
             }
         }
 
-
         stage("Push Docker Image to Docker Hub") {
             steps {
                 withCredentials([usernamePassword(credentialsId: "dockerhub", usernameVariable: "DOCKERHUB_USERNAME", passwordVariable: "DOCKERHUB_TOKEN")]) {
                     sh('''
                         set +x
                         printf "%s" "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+
+                        IMAGE_TAG=$(git rev-parse --short HEAD)
+
                         docker tag cloudopslab-api:latest "$DOCKERHUB_USERNAME/cloudopslab-api:latest"
+                        docker tag cloudopslab-api:latest "$DOCKERHUB_USERNAME/cloudopslab-api:$IMAGE_TAG"
+
                         docker push "$DOCKERHUB_USERNAME/cloudopslab-api:latest"
+                        docker push "$DOCKERHUB_USERNAME/cloudopslab-api:$IMAGE_TAG"
+
                         docker logout
                     ''')
                 }
