@@ -52,6 +52,21 @@ pipeline {
             }
         }
 
+
+        stage("Push Docker Image to Docker Hub") {
+            steps {
+                withCredentials([usernamePassword(credentialsId: "dockerhub", usernameVariable: "DOCKERHUB_USERNAME", passwordVariable: "DOCKERHUB_TOKEN")]) {
+                    sh('''
+                        set +x
+                        printf "%s" "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+                        docker tag cloudopslab-api:latest "$DOCKERHUB_USERNAME/cloudopslab-api:latest"
+                        docker push "$DOCKERHUB_USERNAME/cloudopslab-api:latest"
+                        docker logout
+                    ''')
+                }
+            }
+        }
+
         stage('Build Summary') {
             steps {
                 echo 'CloudOpsLab CI/CD pipeline completed successfully!'
