@@ -2,9 +2,15 @@
 
 CloudOpsLab is a hands-on DevOps portfolio project that automates the build, testing, containerization, deployment, and health verification of a Spring Boot REST API.
 
+The project demonstrates a CI/CD pipeline using Jenkins and GitHub, Docker container deployment, and local Kubernetes orchestration.
+
 ## Architecture
 
-Developer → GitHub → Jenkins → Maven Build & Tests → Docker Image → Container Deployment → Health Check
+Developer → GitHub → GitHub Webhook → Jenkins → Maven Build & Tests → Docker Image → Deployment → Health Check
+
+Kubernetes deployment:
+
+Docker Hub Image → Kubernetes Deployment → 3 Application Pods → Kubernetes Service
 
 ## Technology Stack
 
@@ -13,7 +19,9 @@ Developer → GitHub → Jenkins → Maven Build & Tests → Docker Image → Co
 - Maven
 - Git and GitHub
 - Jenkins
-- Docker
+- Docker and Docker Hub
+- Kubernetes
+- YAML
 - JUnit and Spring Boot Test
 
 ## CI/CD Pipeline
@@ -21,46 +29,124 @@ Developer → GitHub → Jenkins → Maven Build & Tests → Docker Image → Co
 1. **Checkout:** Jenkins retrieves source code from GitHub.
 2. **Build and Test:** Maven compiles the application and runs automated tests.
 3. **Build Docker Image:** Jenkins creates the application Docker image.
-4. **Deploy Application:** Jenkins replaces and starts the application container.
-5. **Health Check:** Jenkins retries the health endpoint until the application responds or the check fails.
-6. **Build Summary:** Jenkins reports the pipeline result.
+4. **Publish Image:** The pipeline publishes versioned and latest image tags to Docker Hub.
+5. **Deploy Application:** Jenkins starts the application container.
+6. **Health Check:** Jenkins checks the application health endpoint.
+7. **Build Summary:** Jenkins reports the pipeline result.
 
-A GitHub webhook is configured to trigger builds when code is pushed.
+A GitHub webhook triggers the Jenkins pipeline when code is pushed.
 
-## API Endpoints
+## Application API Endpoints
 
-| Endpoint | Expected response |
+| Endpoint | Purpose |
 | --- | --- |
-| `/health` | `CloudOpsLab API is running` |
-| `/students` | JSON list of three sample students |
+| `/health` | Checks application health |
+| `/students` | Returns a JSON list of three sample students |
+| `/build-info` | Returns build information |
 
-The application runs locally on port `8082`.
+### Local Docker deployment
 
-## Run Locally
+The original Docker deployment runs on port `8082`.
+
+- Health: http://localhost:8082/health
+- Students: http://localhost:8082/students
+- Build information: http://localhost:8082/build-info
+
+Example response from `/health`:
+
+```text
+CloudOpsLab API is running
+```
+
+## Kubernetes Deployment
+
+Kubernetes manifests are stored in the `k8s/` directory.
+
+- `k8s/deployment.yaml` defines the application Deployment with three replicas.
+- `k8s/service.yaml` defines a ClusterIP Service on port 8080.
+- Startup, liveness, and readiness probes check the `/health` endpoint.
+- Kubernetes replaces a Pod if it is deleted, maintaining the desired replica count.
+
+The project was tested locally using the Kubernetes cluster provided by Docker Desktop.
+
+### Apply Kubernetes manifests
+
+Prerequisites: Docker Desktop with Kubernetes enabled and `kubectl` installed.
+
+From the project root:
+
+```bash
+kubectl config current-context
+kubectl apply -f k8s/
+kubectl rollout status deployment/cloudopslab-api
+kubectl get pods -l app=cloudopslab-api
+kubectl get services
+```
+
+### Access the Kubernetes application
+
+Start port forwarding:
+
+```bash
+kubectl port-forward service/cloudopslab-api-service 8083:8080
+```
+
+Keep that terminal running. Open another terminal and test:
+
+```bash
+curl http://localhost:8083/health
+curl http://localhost:8083/students
+curl http://localhost:8083/build-info
+```
+
+Port `8083` is a local port-forward and is available only while the command is running. The original Docker deployment on port `8082` is separate.
+
+### Scale the application
+
+```bash
+kubectl scale deployment/cloudopslab-api --replicas=3
+kubectl get pods -l app=cloudopslab-api
+```
+
+### Remove the Kubernetes resources
+
+To remove the resources created by these manifests:
+
+```bash
+kubectl delete -f k8s/
+```
+
+This removes the Kubernetes Deployment and Service. It does not remove the separate Docker container running on port `8082`.
+
+## Run the Application Locally
 
 Prerequisites: Java 21 and Docker.
 
-Build and test from the application directory:
+Build and test:
 
 ```bash
 cd app
 chmod +x mvnw
 ./mvnw clean verify
+cd ..
 ```
 
-Build the Docker image from the project root:
+Build the Docker image:
 
 ```bash
 docker build -t cloudopslab-api:latest app
 ```
 
-Run the container:
+Run the container if that container name is not already in use:
 
 ```bash
-docker run -d --name cloudopslab-api-container -p 8082:8080 --restart unless-stopped cloudopslab-api:latest
+docker run -d --name cloudopslab-api-container \
+  -p 8082:8080 \
+  --restart unless-stopped \
+  cloudopslab-api:latest
 ```
 
-Verify the endpoints:
+Test the application:
 
 ```bash
 curl http://localhost:8082/health
@@ -70,18 +156,33 @@ curl http://localhost:8082/students
 ## Skills Demonstrated
 
 - Git and GitHub version control
-- Jenkins pipeline automation
+- Jenkins CI/CD pipeline automation
+- GitHub webhook integration
 - Maven builds and automated testing
 - Docker image creation and container deployment
-- GitHub webhook integration
-- Deployment health checks and retry logic
+- Docker Hub image publishing
+- Kubernetes Deployments and Services
+- Kubernetes replicas and self-healing
+- Startup, liveness, and readiness probes
+- Application health checks
 - CI/CD troubleshooting
 
 ## Project Status
 
-**Completed:** GitHub integration, Jenkins CI/CD, Maven build and tests, Docker deployment, and automated health checks.
+**Implemented and tested:**
+- GitHub source control and webhook-triggered Jenkins builds
+- Maven build and automated tests
+- Docker image build and application deployment
+- Docker Hub image publishing
+- Automated health checks
+- Local Kubernetes deployment with three replicas
+- Kubernetes Service and health probes
+- Pod replacement and replica verification
 
-**Planned:** Terraform infrastructure, Kubernetes deployment, Prometheus and Grafana monitoring, and publishing the image to a container registry.
+**Potential future improvements:**
+- Terraform infrastructure automation
+- Prometheus and Grafana monitoring
+- Additional integration tests and security scanning
 
 ---
 
