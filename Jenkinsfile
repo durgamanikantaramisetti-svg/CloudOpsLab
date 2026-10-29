@@ -28,7 +28,13 @@ pipeline {
             steps {
                 sh '''
                     docker rm -f cloudopslab-api-container || true
-                    docker run -d                         --name cloudopslab-api-container                         -p 8082:8080                         --restart unless-stopped                         cloudopslab-api:latest
+                    docker run -d \
+                        --name cloudopslab-api-container \
+                        -p 8082:8080 \
+                        --restart unless-stopped \
+                        -e JENKINS_BUILD_NUMBER="$BUILD_NUMBER" \
+                        -e GIT_COMMIT="$(git rev-parse HEAD)" \
+                        cloudopslab-api:latest
                 '''
             }
         }

@@ -118,6 +118,30 @@ async function loadStudents() {
     }
 }
 
+
+async function loadBuildInfo() {
+    const metric = $("buildMetric");
+    const caption = $("buildCaption");
+    if (!metric || !caption) return;
+
+    try {
+        const response = await fetch("/build-info", { cache: "no-store" });
+        if (!response.ok) throw new Error("HTTP " + response.status);
+
+        const info = await response.json();
+        metric.textContent = info.buildNumber === "local"
+            ? "Local build"
+            : "#" + info.buildNumber;
+
+        caption.textContent = info.commit && info.commit !== "unknown"
+            ? "Commit: " + info.commit.substring(0, 7)
+            : "Commit information unavailable";
+    } catch (error) {
+        metric.textContent = "Unavailable";
+        caption.textContent = "Could not load build information";
+    }
+}
+
 function setupNavigation() {
     const links = document.querySelectorAll(".nav-link");
 
@@ -161,7 +185,7 @@ function setupCopyButtons() {
 
 document.addEventListener("DOMContentLoaded", () => {
     $("refreshButton").addEventListener("click", async () => {
-        await Promise.all([checkHealth(), loadStudents()]);
+        await Promise.all([checkHealth(), loadStudents(), loadBuildInfo()]);
     });
 
     $("healthButton").addEventListener("click", checkHealth);
@@ -172,4 +196,5 @@ document.addEventListener("DOMContentLoaded", () => {
 
     checkHealth();
     loadStudents();
+    loadBuildInfo();
 });

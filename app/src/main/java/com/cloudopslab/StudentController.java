@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 public class StudentController {
@@ -16,5 +17,13 @@ public class StudentController {
     @GetMapping("/health")
     public String health() {
         return "CloudOpsLab API is running";
+    }
+
+    @GetMapping("/build-info")
+    public Map<String, String> buildInfo() {
+        return Map.of(
+            "buildNumber", System.getenv().getOrDefault("JENKINS_BUILD_NUMBER", "local"),
+            "commit", System.getenv().getOrDefault("GIT_COMMIT", "unknown")
+        );
     }
 }
