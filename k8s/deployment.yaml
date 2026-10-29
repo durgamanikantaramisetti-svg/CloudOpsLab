@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudopslab-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: cloudopslab-api
+  template:
+    metadata:
+      labels:
+        app: cloudopslab-api
+    spec:
+      containers:
+        - name: cloudopslab-api
+          image: manikanta156/cloudopslab-api:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          env:
+            - name: JENKINS_BUILD_NUMBER
+              value: "kubernetes-local"
+            - name: GIT_COMMIT
+              value: "a39bccc"
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            periodSeconds: 5
+            failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            periodSeconds: 5
+            failureThreshold: 3
