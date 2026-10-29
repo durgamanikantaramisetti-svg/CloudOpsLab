@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0b1020">
+    <title>CloudOpsLab | Cloud Operations</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <a class="brand" href="#">
+                <span class="brand-icon">C</span>
+                <span>
+                    <strong>CloudOpsLab</strong>
+                    <small>OPERATIONS CENTER</small>
+                </span>
+            </a>
+
+            <p class="nav-heading">WORKSPACE</p>
+            <nav class="navigation">
+                <a class="nav-link active" href="#overview">▦ <span>Overview</span></a>
+                <a class="nav-link" href="#monitor">◉ <span>API Monitor</span></a>
+                <a class="nav-link" href="#students">♙ <span>Students API</span></a>
+                <a class="nav-link" href="#deployments">⇧ <span>Deployments</span></a>
+            </nav>
+
+            <div class="sidebar-bottom">
+                <div class="connection-dot"></div>
+                <div>
+                    <strong>Local environment</strong>
+                    <small>Spring Boot · Docker</small>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <div>
+                    <p class="eyebrow">CLOUD OPERATIONS / DASHBOARD</p>
+                    <h1>Overview</h1>
+                </div>
+                <div class="topbar-right">
+                    <span class="environment"><span></span> DEVELOPMENT</span>
+                    <div class="avatar">CO</div>
+                </div>
+            </header>
+
+            <section class="welcome">
+                <div>
+                    <p class="eyebrow">YOUR DEVOPS WORKSPACE</p>
+                    <h2>Everything running in one place.</h2>
+                    <p>Monitor your application, inspect API responses and track your deployment workflow.</p>
+                </div>
+                <button id="refreshButton" class="primary-button">↻ Refresh status</button>
+            </section>
+
+            <section class="metrics" aria-label="Application metrics">
+                <article class="metric-card">
+                    <div class="metric-top"><span>API STATUS</span><span class="metric-icon">⌁</span></div>
+                    <h3 id="apiMetric">Checking...</h3>
+                    <p><span class="status-dot" id="apiDot"></span><span id="apiCaption">Connecting to backend</span></p>
+                </article>
+                <article class="metric-card">
+                    <div class="metric-top"><span>STUDENTS</span><span class="metric-icon">♙</span></div>
+                    <h3 id="studentMetric">—</h3>
+                    <p>Records returned by API</p>
+                </article>
+                <article class="metric-card">
+                    <div class="metric-top"><span>BACKEND</span><span class="metric-icon">▣</span></div>
+                    <h3>Spring Boot</h3>
+                    <p><span class="status-dot"></span> REST API service</p>
+                </article>
+                <article class="metric-card">
+                    <div class="metric-top"><span>DELIVERY</span><span class="metric-icon">⇧</span></div>
+                    <h3>CI / CD</h3>
+                    <p>GitHub + Jenkins + Docker</p>
+                </article>
+            </section>
+
+            <section class="content-grid">
+                <article class="panel" id="monitor">
+                    <div class="panel-heading">
+                        <div>
+                            <p class="eyebrow">LIVE CHECK</p>
+                            <h2>API health monitor</h2>
+                        </div>
+                        <span id="healthBadge" class="badge pending">Checking</span>
+                    </div>
+                    <p class="muted">This dashboard calls your Spring Boot backend directly.</p>
+                    <div class="endpoint">
+                        <span class="method">GET</span>
+                        <code>/health</code>
+                        <button class="copy-button" data-copy="/health">Copy</button>
+                    </div>
+                    <div class="endpoint">
+                        <span class="method">GET</span>
+                        <code>/students</code>
+                        <button class="copy-button" data-copy="/students">Copy</button>
+                    </div>
+                    <div class="response-box">
+                        <div class="response-header"><span>HEALTH RESPONSE</span><span id="responseCode">—</span></div>
+                        <pre id="healthResponse">Waiting for API response...</pre>
+                    </div>
+                    <button id="healthButton" class="secondary-button">Run health check</button>
+                </article>
+
+                <article class="panel" id="deployments">
+                    <div class="panel-heading">
+                        <div>
+                            <p class="eyebrow">DELIVERY PIPELINE</p>
+                            <h2>Deployment workflow</h2>
+                        </div>
+                        <span class="badge neutral">CI / CD</span>
+                    </div>
+                    <div class="pipeline">
+                        <div class="pipeline-step">
+                            <div class="step-icon">✓</div>
+                            <div><strong>Source control</strong><p>GitHub repository</p></div>
+                            <span class="step-state">CONNECTED</span>
+                        </div>
+                        <div class="pipeline-line"></div>
+                        <div class="pipeline-step">
+                            <div class="step-icon">↻</div>
+                            <div><strong>Continuous integration</strong><p>Jenkins pipeline</p></div>
+                            <span class="step-state">CONFIGURED</span>
+                        </div>
+                        <div class="pipeline-line"></div>
+                        <div class="pipeline-step">
+                            <div class="step-icon">▣</div>
+                            <div><strong>Containerization</strong><p>Docker image</p></div>
+                            <span class="step-state">CONFIGURED</span>
+                        </div>
+                        <div class="pipeline-line"></div>
+                        <div class="pipeline-step">
+                            <div class="step-icon">⇧</div>
+                            <div><strong>Deployment</strong><p>Running application</p></div>
+                            <span class="step-state">VERIFYING</span>
+                        </div>
+                    </div>
+                    <p class="note">Pipeline labels describe the configured workflow; this page does not fetch live Jenkins build data.</p>
+                </article>
+            </section>
+
+            <section class="panel students-panel" id="students">
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow">BACKEND DATA</p>
+                        <h2>Students API</h2>
+                    </div>
+                    <button id="studentsButton" class="secondary-button">Fetch students</button>
+                </div>
+                <p class="muted">Data below comes from the <code>/students</code> endpoint.</p>
+                <div id="studentsList" class="students-list">
+                    <p class="empty-state">Click “Fetch students” to load records.</p>
+                </div>
+                <p id="studentsMessage" class="muted" role="status"></p>
+            </section>
+
+            <footer>
+                <span>CloudOpsLab · Learning DevOps by building</span>
+                <span id="lastUpdated">Last checked: not yet</span>
+            </footer>
+        </main>
+    </div>
+
+    <script src="/app.js"></script>
+</body>
+</html>
